@@ -1,0 +1,24 @@
+<html data-ng-app="App">
+<head>
+    <title>Progress Button</title>
+    <link rel="stylesheet" type="text/css" href="progButtonDir.css">
+    <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+</head>
+
+
+
+<body data-ng-controller="AppController" style="padding:10px;">
+<br>
+<br>
+
+    <button data-progress-button data-additional-classes="btn-primary">Submit</button>
+    <button data-progress-button data-additional-classes="btn-primary" data-border-color="red">Close</button>
+    <button data-progress-button data-additional-classes="btn-primary differentButton" data-border-color="red">Different Button</button>
+    <button data-progress-button data-additional-classes="btn-primary differentButton2" data-border-color="pink">Different Button</button>
+
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script src="app.js"></script>
+    <script src="progButtonDir.js"></script>
+
+</body>
+</html>
