@@ -22,3 +22,25 @@
 .progButton Button.differentButton2 {
     border-radius: 5px
 }
+
+.progButton Button.differentButton3 {
+    border-radius: 150px;
+    height:150px;
+    width: 150px;
+}
+
+#slider-vertical {
+    height:200px;
+    position:absolute;
+    top:60px;
+    left:350px;
+}
+#percent {
+    width:25px;
+    position:absolute;
+    top:20px;
+    left:340px;
+    border:0;
+    color:blue;
+    font-weight:bold;
+}
