@@ -15,15 +15,15 @@
 
 }
 
-.progButton Button.differentButton {
+.progButton Button.br20 {
     border-radius: 20px
 }
 
-.progButton Button.differentButton2 {
+.progButton Button.br5 {
     border-radius: 5px
 }
 
-.progButton Button.differentButton3 {
+.progButton Button.round {
     border-radius: 150px;
     height:150px;
     width: 150px;
@@ -43,4 +43,8 @@
     border:0;
     color:blue;
     font-weight:bold;
+}
+
+.fa.toggle-button {
+    font-size:30px;
 }

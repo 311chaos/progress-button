@@ -1,0 +1,15 @@
+*.old
+*.db
+.idea/*
+!.idea/runConfigurations/
+!.idea/runConfigurations/*
+#dist/*
+reports/*
+node_modules/*
+#src/app/bower_components/*
+src/app/coverage/*
+out/*
+pom.*
+.rebooted
+bower_components/*
+

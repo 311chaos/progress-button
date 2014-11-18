@@ -3,6 +3,7 @@
     <title>Progress Button</title>
     <link rel="stylesheet" type="text/css" href="progButtonDir.css">
     <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="bower_components/font-awesome/css/font-awesome.min.css">
 </head>
 
 
@@ -11,11 +12,16 @@
 <br>
 <br>
 
-    <button data-progress-button data-additional-classes="btn-primary">Submit</button>
-    <button data-progress-button data-additional-classes="btn-primary" data-border-color="red">Close</button>
-    <button data-progress-button data-additional-classes="btn-primary differentButton" data-border-color="red">Different Button</button>
-    <button data-progress-button data-additional-classes="btn-primary differentButton2" data-border-color="black">Different Button</button>
-    <button data-progress-button data-additional-classes="btn-primary differentButton3" data-border-color="green" data-line-width="10">Different Button</button>
+    <button data-progress-button data-additional-classes="btn-primary center-block">Button1</button>
+    <button data-progress-button data-additional-classes="btn-primary" data-border-color="red">Button2</button>
+    <button data-progress-button data-additional-classes="btn-primary br20" data-border-color="red" data-percentage="button3Value">Button3</button>
+    <button data-progress-button data-additional-classes="btn-primary br5" data-border-color="black">Button4</button>
+    <button data-progress-button data-additional-classes="btn-primary round" data-border-color="green" data-line-width="10">Button5</button>
+    <button data-progress-button data-additional-classes="btn-primary differentButton3" data-border-color="green" data-line-width="10" data-completed="actionCompleted()"><i class="fa fa-toggle-off toggle-button"></i></button>
+
+    <div>
+        Button 3 Value: {{button3Value}}
+    </div>
 
 
     <script src="bower_components/angular/angular.min.js"></script>
