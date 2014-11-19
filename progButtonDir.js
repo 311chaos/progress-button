@@ -9,7 +9,11 @@ App.directive('progressButton', ['$interval', '$timeout', function($interval, $t
       percentage: "=?",
       completed: "&"
     },
-    template: '<span class="progButton"><canvas id="fill" width="1" height="1" ></canvas><button class="btn" ng-class="additionalClasses" ng-transclude></button></span>',
+    template: '<span class="progButton">' +
+      '<canvas width="1" height="1" ></canvas>' +
+      '<canvas width="1" height="1"></canvas>' +
+      '<button class="btn" ng-class="additionalClasses" ng-transclude></button>' +
+    '</span>',
     link: function(scope, element, attrs) {
 
       var internals = {
@@ -23,12 +27,13 @@ App.directive('progressButton', ['$interval', '$timeout', function($interval, $t
         br: 0
       };
 
-      scope.percentage = scope.percentage || 100;
+      scope.percentage = scope.percentage || 0;
 
       internals.button.ready(function() {
 
         //need reference to the canvas element
         var canvas = element.find('canvas')[0];
+        var canvasOutline = element.find('canvas')[1];
         var width = canvas.attributes['width'].value = internals.button[0].offsetWidth + (internals.lw * 2);
         var height = canvas.attributes['height'].value = internals.button[0].offsetHeight + (internals.lw * 2);
 
@@ -37,8 +42,12 @@ App.directive('progressButton', ['$interval', '$timeout', function($interval, $t
         internals.button[0].style.width = internals.button[0].offsetWidth;
 
         var ctx = canvas.getContext("2d");
+        var ctx2 = canvasOutline.getContext("2d");
+
         ctx.lineWidth = internals.lw;
+        ctx2.lineWidth = internals.lw;
         ctx.strokeStyle = internals.bc;
+        ctx2.strokeStyle = internals.bc;
         //ctx.lineCap = 'butt';
 
         //get shape dimensions
@@ -57,14 +66,17 @@ App.directive('progressButton', ['$interval', '$timeout', function($interval, $t
         var totalLength = cornerLength * 4 + scope.horizLineLength * 2 + scope.vertLineLength * 2;
 
         // calc at what accumulated length each part of the rect starts
-        var startT = 0;                           // top line
-        var startTR = scope.horizLineLength;            // top-right corner
-        var startR = startTR+cornerLength;        // right line
-        var startBR = startR+scope.vertLineLength;      // bottom-right corner
-        var startB = startBR+cornerLength;        // bottom line
-        var startBL = startB+scope.horizLineLength;     // bottom-left corner
-        var startL = startBL+cornerLength;        // left line
-        var startTL = startL+scope.vertLineLength;      // top-left corner
+        var rectVal = {
+          startT: 0,
+          startTR: scope.horizLineLength
+        };
+
+        rectVal.startR = rectVal.startTR+cornerLength;
+        rectVal.startBR = rectVal.startR+scope.vertLineLength;
+        rectVal.startB = rectVal.startBR+cornerLength;
+        rectVal.startBL = rectVal.startB+scope.horizLineLength;
+        rectVal.startL = rectVal.startBL+cornerLength;
+        rectVal.startTL = rectVal.startL+scope.vertLineLength;
 
         //TODO - Calculate progress duration. take total time as a param, then divide by 100 to find how often to increment.
 
@@ -77,99 +89,87 @@ App.directive('progressButton', ['$interval', '$timeout', function($interval, $t
           ctx.clearRect(0, 0, canvas.width, canvas.height);
 
           // top line
-          d = accumLength - startT;
-          d = Math.min(d, scope.horizLineLength);
-          if (d > 0) {
-            x1 = internals.lw/2 + internals.br;
-            y1 = internals.lw/2;
-            x2 = internals.lw/2 + internals.br + d;
-            y2 = internals.lw/2;
-            drawLine(x1, y1, x2, y2, ctx);
+          var d = Math.min(accumLength - rectVal.startT, scope.horizLineLength);
+          if (d > 0) { drawLine({
+              x1: internals.lw/2 + internals.br,
+              y1: internals.lw/2,
+              x2: internals.lw/2 + internals.br + d,
+              y2: internals.lw/2
+            }, ctx);
           }
 
           // top-right corner
-          d = accumLength - startTR;
-          d = Math.min(d, cornerLength);
-          if (d > 0) {
-            var x = canvas.width - (internals.br + internals.lw);
-            var y = internals.br + internals.lw;
-            var start = -Math.PI * .5;
-            var end = -Math.PI * .5 + (d / cornerLength * Math.PI * .5);
-            drawCorner(x, y, start, end, ctx);
+          d = Math.min(accumLength - rectVal.startTR, cornerLength);
+          if (d > 0) { drawCorner({
+              x: canvas.width - (internals.br + internals.lw),
+              y: internals.br + internals.lw,
+              start: -Math.PI * .5,
+              end: -Math.PI * .5 + ((d / cornerLength) * (Math.PI * .5))
+            }, ctx);
           }
 
-
           // right line
-          var d = accumLength - startR;
-          d = Math.min(d, scope.vertLineLength);
-          if (d > 0) {
-            var x1 = internals.lw/2 + internals.br + scope.horizLineLength + internals.br;
-            var y1 = internals.lw/2 + internals.br;
-            var x2 = internals.lw/2 + internals.br + scope.horizLineLength + internals.br;
-            var y2 = internals.lw/2 + internals.br + d;
-            drawLine(x1, y1, x2, y2, ctx);
+          d = Math.min(accumLength - rectVal.startR, scope.vertLineLength);
+          if (d > 0) { drawLine({
+              x1: internals.lw/2 + (internals.br * 2) + scope.horizLineLength,
+              y1: internals.lw/2 + internals.br,
+              x2: internals.lw/2 + (internals.br * 2) + scope.horizLineLength,
+              y2: internals.lw/2 + internals.br + d
+            }, ctx);
           }
 
           // bottom-right corner
-          var d = accumLength - startBR;
-          d = Math.min(d, cornerLength);
-          if (d > 0) {
-            var x = canvas.width - (internals.br + internals.lw);
-            var y = canvas.height - (internals.br + internals.lw);
-            var start = 0;
-            var end = (d / cornerLength) * (Math.PI * .5);
-            drawCorner(x, y, start, end, ctx);
+          d = Math.min(accumLength - rectVal.startBR, cornerLength);
+          if (d > 0) { drawCorner({
+              x: canvas.width - (internals.br + internals.lw),
+              y: canvas.height - (internals.br + internals.lw),
+              start: 0,
+              end: (d / cornerLength) * (Math.PI * .5)
+            }, ctx);
           }
 
           // bottom line
-          var d = accumLength - startB;
-          d = Math.min(d, scope.horizLineLength);
-          if (d > 0) {
-            var x1 = internals.lw/2 + internals.br + scope.horizLineLength;
-            var y1 = internals.lw/2 + internals.br + scope.vertLineLength + internals.br;
-            var x2 = internals.lw/2 + internals.br + scope.horizLineLength - d;
-            var y2 = internals.lw/2 + internals.br + scope.vertLineLength + internals.br;
-            drawLine(x1, y1, x2, y2, ctx);
+          d = Math.min(accumLength - rectVal.startB, scope.horizLineLength);
+          if (d > 0) { drawLine({
+              x1: internals.lw/2 + internals.br + scope.horizLineLength,
+              y1: internals.lw/2 + (internals.br*2) + scope.vertLineLength,
+              x2: internals.lw/2 + internals.br + scope.horizLineLength - d,
+              y2: internals.lw/2 + (internals.br*2) + scope.vertLineLength
+            }, ctx);
           }
 
           // bottom-left corner
-          var d = accumLength - startBL;
-          d = Math.min(d, cornerLength);
-          if (d > 0) {
-            var x = internals.br + internals.lw;
-            var y = canvas.height - (internals.br + internals.lw);
-            var start = Math.PI / 2;
-            var end = (Math.PI * .5) + (d / cornerLength) * (Math.PI * .5);
-            drawCorner(x, y, start, end, ctx);
+          d = Math.min(accumLength - rectVal.startBL, cornerLength);
+          if (d > 0) { drawCorner({
+              x: internals.br + internals.lw,
+              y: canvas.height - (internals.br + internals.lw),
+              start: Math.PI / 2,
+              end: (Math.PI * .5) + (d / cornerLength) * (Math.PI * .5)
+            }, ctx);
           }
 
-
           // left line
-          var d = accumLength - startL;
-          d = Math.min(d, scope.vertLineLength);
-          if (d > 0) {
-            var x1 = internals.lw/2;
-            var y1 = internals.lw/2 + internals.br + scope.vertLineLength;
-            var x2 = internals.lw/2;
-            var y2 = internals.br + scope.vertLineLength + internals.lw/2 - d;
-            drawLine(x1, y1, x2, y2, ctx);
+          d = Math.min(accumLength - rectVal.startL, scope.vertLineLength);
+          if (d > 0) { drawLine({
+              x1: internals.lw/2,
+              y1: internals.lw/2 + internals.br + scope.vertLineLength,
+              x2: internals.lw/2,
+              y2: internals.br + scope.vertLineLength + internals.lw/2 - d
+            }, ctx);
           }
 
           // top-left corner
-          var d = accumLength - startTL;
-          d = Math.min(d, cornerLength);
-          if (d > 0) {
-            var x = internals.br + internals.lw;
-            var y = internals.br + internals.lw;
-            var start = Math.PI;
-            var end = Math.PI + (d / cornerLength) * (Math.PI * .5);
-            drawCorner(x, y, start, end, ctx);
+          d = Math.min(accumLength - rectVal.startTL, cornerLength);
+          if (d > 0) { drawCorner({
+              x: internals.br + internals.lw,
+              y: internals.br + internals.lw,
+              start: Math.PI,
+              end: Math.PI + (d / cornerLength) * (Math.PI * .5)
+            }, ctx);
           }
-
         };
 
         scope.drawPercentRect(scope.percentage);
-
 
         internals.button.on('mousedown', function(e){
           if(e.which === 1) { //Only trigger on left mouse click
@@ -184,17 +184,17 @@ App.directive('progressButton', ['$interval', '$timeout', function($interval, $t
         });
       });
 
-      var drawLine = function(x1, y1, x2, y2, ctx) {
+      var drawLine = function(rect, ctx) {
         ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
+        ctx.moveTo(rect.x1, rect.y1);
+        ctx.lineTo(rect.x2, rect.y2);
         ctx.lineWidth = internals.lw;
         ctx.stroke();
       };
 
-      var drawCorner = function(x, y, start, end, ctx) {
+      var drawCorner = function(corner, ctx) {
         ctx.beginPath();
-        ctx.arc(x, y, internals.br  + internals.lw/2, start, end, false);
+        ctx.arc(corner.x, corner.y, internals.br  + internals.lw/2, corner.start, corner.end, false);
         ctx.stroke();
       };
 

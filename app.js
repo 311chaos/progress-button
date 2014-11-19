@@ -5,8 +5,8 @@ App.controller('AppController', ['$scope', function($scope) {
 
     $scope.button3Value = 29;
 
-    $scope.actionCompleted = function() {
-      console.log("Completed");
+    $scope.actionCompleted = function(msg) {
+      console.log(msg);
     };
 }]);
 
