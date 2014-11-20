@@ -91,22 +91,31 @@ App.directive('progressButton', ['$interval', '$timeout', function($interval, $t
           // top line
           var d = Math.min(accumLength - rectVal.startT, scope.horizLineLength);
           if (d > 0) { drawLine({
-              x1: internals.lw/2 + internals.br,
+              x1: internals.lw + internals.br,
               y1: internals.lw/2,
-              x2: internals.lw/2 + internals.br + d,
+              x2: internals.lw + internals.br + d,
               y2: internals.lw/2
             }, ctx);
           }
 
           // top-right corner
+          //need to check for borderRadius === 0, if so we need to fill in the corners.
           d = Math.min(accumLength - rectVal.startTR, cornerLength);
-          if (d > 0) { drawCorner({
+          if(internals.br === 0 && d === 0){
+            drawLine({
+              x1: scope.horizLineLength + (internals.lw/2),
+              y1: internals.lw/2,
+              x2: scope.horizLineLength + internals.lw,
+              y2: internals.lw/2
+            }, ctx);
+          } else if (d > 0) { drawCorner({
               x: canvas.width - (internals.br + internals.lw),
               y: internals.br + internals.lw,
               start: -Math.PI * .5,
               end: -Math.PI * .5 + ((d / cornerLength) * (Math.PI * .5))
             }, ctx);
           }
+
 
           // right line
           d = Math.min(accumLength - rectVal.startR, scope.vertLineLength);
@@ -120,7 +129,15 @@ App.directive('progressButton', ['$interval', '$timeout', function($interval, $t
 
           // bottom-right corner
           d = Math.min(accumLength - rectVal.startBR, cornerLength);
-          if (d > 0) { drawCorner({
+          if(internals.br === 0 && d === 0) {
+            drawLine({
+              x1: scope.horizLineLength + (internals.lw/2),
+              y1: scope.vertLineLength + (internals.lw/2),
+              x2: scope.horizLineLength + (internals.lw/2),
+              y2: scope.vertLineLength + internals.lw
+
+            }, ctx);
+          } else if (d > 0) { drawCorner({
               x: canvas.width - (internals.br + internals.lw),
               y: canvas.height - (internals.br + internals.lw),
               start: 0,
@@ -140,7 +157,14 @@ App.directive('progressButton', ['$interval', '$timeout', function($interval, $t
 
           // bottom-left corner
           d = Math.min(accumLength - rectVal.startBL, cornerLength);
-          if (d > 0) { drawCorner({
+          if(internals.br === 0 && d === 0) {
+            drawLine({
+              x1: internals.lw/2,
+              y1: scope.vertLineLength + (internals.lw/2),
+              x2: 0,
+              y2: scope.vertLineLength + (internals.lw/2)
+            }, ctx)
+          } else if (d > 0) { drawCorner({
               x: internals.br + internals.lw,
               y: canvas.height - (internals.br + internals.lw),
               start: Math.PI / 2,
@@ -160,7 +184,14 @@ App.directive('progressButton', ['$interval', '$timeout', function($interval, $t
 
           // top-left corner
           d = Math.min(accumLength - rectVal.startTL, cornerLength);
-          if (d > 0) { drawCorner({
+          if(internals.br === 0 && d === 0) {
+            drawLine({
+              x1: internals.lw/2,
+              y1: internals.lw/2,
+              x2: internals.lw/2,
+              y2: 0
+            }, ctx);
+          } else if (d > 0) { drawCorner({
               x: internals.br + internals.lw,
               y: internals.br + internals.lw,
               start: Math.PI,
@@ -203,16 +234,12 @@ App.directive('progressButton', ['$interval', '$timeout', function($interval, $t
         //the delay here allows for you to visualize the completed progressbar, without this $timeout it looks like the progress only goes to ALMOST done
         $timeout(function(){
           scope.percentage = 0;
-          scope.drawPercentRect(scope.percentage);
         }, 100);
       };
 
       var incrementProg = function() {
         scope.percentage = scope.percentage + internals.incBy;
-        scope.drawPercentRect(scope.percentage);
-
         if(scope.percentage >=100) {
-          scope.drawPercentRect(100);
           cancelProgressPromise(internals.incPromise);
           internals.button.off('mouseup');
           scope.completed();
@@ -221,12 +248,15 @@ App.directive('progressButton', ['$interval', '$timeout', function($interval, $t
 
       var decrementProg = function() {
         scope.percentage = scope.percentage - internals.incBy;
-        if(scope.percentage > 0)
-          scope.drawPercentRect(scope.percentage);
-        else {
+        if(scope.percentage <= 0)
           cancelProgressPromise(internals.decPromise);
-        }
       };
+
+      scope.$watch('percentage', function(newVal,oldVal){
+        if(newVal != oldVal) {
+          scope.drawPercentRect(scope.percentage);
+        }
+      });
 
       var mouseUp = function(e){
         if(e.which === 1) { //Only trigger on left mouse click
